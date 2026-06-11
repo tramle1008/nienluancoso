@@ -12,9 +12,9 @@ const initialState = {
 
 export const adminOrderReducer = (state = initialState, action) => {
     switch (action.type) {
-        case "ORDER_FETCH_REQUEST":
+        case "ADMIN_ORDER_FETCH_REQUEST":
             return { ...state, loading: true, error: null };
-        case "ORDER_FETCH_SUCCESS":
+        case "ADMIN_ORDER_FETCH_SUCCESS":
             return {
                 ...state,
                 loading: false,
@@ -25,7 +25,7 @@ export const adminOrderReducer = (state = initialState, action) => {
                 totalPages: action.payload.totalPages,
                 lastPage: action.payload.lastPage,
             };
-        case "ORDER_FETCH_FAIL":
+        case "ADMIN_ORDER_FETCH_FAIL":
             return { ...state, loading: false, error: action.payload };
         default:
             return state;

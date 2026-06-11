@@ -1,4 +1,4 @@
-import { Button } from "@headlessui/react";
+﻿import { Button } from "@headlessui/react";
 import { FaShoppingCart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import ItemContent from "./ItemContent";
@@ -10,13 +10,40 @@ import { fetchCart } from "../../../store/actions";
 const Cart = () => {
     const dispatch = useDispatch();
     const { loading, products, totalPrice, error } = useSelector((state) => state.cart);
+    const [authMessage, setAuthMessage] = useState("");
 
     useEffect(() => {
-        dispatch(fetchCart());
-    }, [dispatch]);
+        const authRaw = localStorage.getItem("auth");
 
-    // console.log("Cart Products:", products);
-    // console.log("Type of products:", typeof products);
+        if (!authRaw) {
+            setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
+            return;
+        }
+
+        try {
+            const auth = JSON.parse(authRaw);
+            const token = auth?.jwtToken;
+
+            if (!token) {
+                setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
+                return;
+            }
+
+            const payloadBase64 = token.split(".")[1];
+            const payload = JSON.parse(atob(payloadBase64));
+            const isExpired = payload?.exp ? payload.exp * 1000 <= Date.now() : false;
+
+            if (isExpired) {
+                setAuthMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                return;
+            }
+
+            setAuthMessage("");
+            dispatch(fetchCart());
+        } catch (_e) {
+            setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
+        }
+    }, [dispatch]);
 
     return (
         <div className="lg:px-14 sm:px-8 py-10">
@@ -37,6 +64,8 @@ const Cart = () => {
 
                 {loading ? (
                     <p className="text-center mt-4">Đang tải...</p>
+                ) : authMessage ? (
+                    <p className="text-amber-600 mt-4 text-center">{authMessage}</p>
                 ) : error ? (
                     <p className="text-red-500 mt-4 text-center">{error}</p>
                 ) : products.length > 0 ? (
@@ -59,7 +88,6 @@ const Cart = () => {
             </div>
 
             <div className="flex justify-end mt-4">
-
                 <Link to="/checkout">
                     <button
                         disabled={products.length === 0}
@@ -71,12 +99,9 @@ const Cart = () => {
                         Thanh toán
                     </button>
                 </Link>
-
             </div>
         </div>
     );
-
-
-}
+};
 
 export default Cart;

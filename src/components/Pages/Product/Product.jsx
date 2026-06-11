@@ -2,11 +2,9 @@ import { FaExclamationTriangle } from "react-icons/fa";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { fetchCategories, fetchProduct } from "../../../store/actions";
-import Filter from "../../Filter";
+import { fetchCategories } from "../../../store/actions";
 import useProductFilter from "../../useProductFilter";
 import PaginationRounded from "../../PaginationRounded";
-import Navbar from "../Navbar";
 import ReusableFilter from "../../ReusableFilter";
 import ProductCard from "./ProductCard";
 
@@ -29,7 +27,7 @@ const Product = () => {
         <section>
 
 
-            <div className="lg:px-14 sm:px-8 px-2 py-4 2xl:w-[90%] 2xl:mx-auto bg-[#92a695]">
+            <div className="w-full lg:px-14 sm:px-8 px-4 py-4 bg-[#92a695]">
 
                 <ReusableFilter
                     filterLabel="Category"
@@ -47,7 +45,7 @@ const Product = () => {
                     </div>
                 ) : (
 
-                    <section className="px-4 sm:px-4 lg:px-14 pt-10 2xl:w-[90%] 2xl:mx-auto">
+                    <section className="pt-10">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                             {products && products.map((item) => (
                                 <ProductCard key={item.productId} {...item} />

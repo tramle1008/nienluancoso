@@ -1,158 +1,219 @@
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { toast } from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+
 import InputField from "../../InputField";
-import { useNavigate } from "react-router-dom";
-import api from "../../../api/api";
+import { addUserAddressApi, loginApi, registerApi } from "../../../api/authApi";
 
 const Register = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
+    const googleLoginUrl = `${import.meta.env.VITE_BACK_END_URL}/oauth2/authorize/google`;
 
     const handleRegister = async (data) => {
         try {
-            await api.post("/auth/signup", {
+            await registerApi({
                 username: data.username,
                 email: data.email,
                 password: data.password,
-                role: null,
-            }, {
-                headers: { "Content-Type": "application/json" },
             });
 
-            const loginRes = await api.post("/auth/signin", {
+            const loginResponse = await loginApi({
                 username: data.username,
                 password: data.password,
             });
 
-            const token = loginRes.data?.jwtToken;
+            const token = loginResponse?.jwtToken;
 
             if (!token) {
                 toast.error("Không thể lấy token sau khi đăng ký");
                 return;
             }
 
-            // 3. Gửi địa chỉ
-            await api.post("/auth/user/addresses", {
-                province: data.province,
-                district: data.district,
-                ward: data.ward,
-                phoneNumber: data.phoneNumber,
-            }, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+            await addUserAddressApi(
+                {
+                    province: data.province,
+                    district: data.district,
+                    ward: data.ward,
+                    detail: data.detail,
+                    phoneNumber: data.phoneNumber,
                 },
-            });
+                token
+            );
 
             toast.success("Đăng ký và thêm địa chỉ thành công!");
             navigate("/login");
-
         } catch (error) {
-            const msg = error.response?.data?.message || "Có lỗi xảy ra!";
-            toast.error(msg);
+            const message = error.response?.data?.message || "Có lỗi xảy ra!";
+            toast.error(message);
             console.error("Lỗi đăng ký:", error);
         }
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 mb-10 bg-white shadow-lg p-6 rounded-xl border">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Đăng ký</h2>
+        <div className="mx-auto my-10 w-full max-w-4xl overflow-hidden rounded-3xl border border-amber-100 bg-[#f2e4d3] shadow-[0_20px_60px_rgba(95,52,8,0.18)]">
+            <div className="grid lg:grid-cols-[0.95fr_1.35fr]">
+                <div className="bg-gradient-to-br from-[#8c4a0f] via-[#c57a2a] to-[#f1c27d] px-8 py-10 text-white">
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-100">Clothiq</p>
+                    <h2 className="mt-4 text-3xl font-bold leading-tight">Tạo tài khoản mới</h2>
+                    <p className="mt-4 text-sm leading-6 text-amber-50/90">
+                        Điền thông tin cơ bản và địa chỉ giao hàng để bắt đầu mua sắm nhanh hơn.
+                    </p>
 
-            <form onSubmit={handleSubmit(handleRegister)} className="flex flex-col gap-4">
-                <InputField
-                    label="Tên người dùng"
-                    id="username"
-                    type="text"
-                    placeholder="Nhập tên"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
+                    <div className="mt-8 space-y-4 rounded-2xl bg-white/15 p-5 backdrop-blur-sm">
+                        <div>
+                            <p className="text-sm font-semibold">Đăng ký thường</p>
+                            <p className="mt-1 text-sm text-amber-50/85">
+                                Phù hợp khi bạn muốn nhập đầy đủ thông tin ngay từ đầu.
+                            </p>
+                        </div>
+                        <div className="h-px bg-white/20" />
+                        <a
+                            href={googleLoginUrl}
+                            className="block rounded-xl transition hover:bg-white/10"
+                        >
+                            <p className="text-sm font-semibold">Đăng nhập Google</p>
+                            <p className="mt-1 text-sm text-amber-50/85">
+                                Bạn có thể dùng Google để vào nhanh.
+                            </p>
+                        </a>
+                    </div>
+                </div>
 
-                <InputField
-                    label="Email"
-                    id="email"
-                    type="email"
-                    placeholder="Nhập email"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
+                <div className="bg-[#ead7c0] px-6 py-8 sm:px-8 lg:px-10">
+                    <form onSubmit={handleSubmit(handleRegister)} className="space-y-6">
+                        <div>
+                            <h3 className="text-2xl font-bold text-slate-800">Đăng ký</h3>
+                        </div>
 
-                <InputField
-                    label="Mật khẩu"
-                    id="password"
-                    type="password"
-                    placeholder="Nhập mật khẩu"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                    min={8}
-                />
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <InputField
+                                label="Tên người dùng"
+                                id="username"
+                                type="text"
+                                placeholder="Nhập tên"
+                                register={register}
+                                errors={errors}
+                                required
+                                message="Không được để trống"
+                            />
 
-                {/* Địa chỉ */}
-                <InputField
-                    label="Tỉnh/Thành phố"
-                    id="province"
-                    type="text"
-                    placeholder="Cần Thơ"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Quận/Huyện"
-                    id="district"
-                    type="text"
-                    placeholder="Ninh Kiều"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Phường/Xã"
-                    id="ward"
-                    type="text"
-                    placeholder="An Khánh"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Ấp/ Số nhà, tên đường"
-                    id="detail"
-                    type="text"
-                    placeholder="Ấp 6/ A52, đường số 6"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Số điện thoại"
-                    id="phoneNumber"
-                    type="text"
-                    placeholder="0123456789"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
+                            <InputField
+                                label="Email"
+                                id="email"
+                                type="email"
+                                placeholder="Nhập email"
+                                register={register}
+                                errors={errors}
+                                required
+                                message="Không được để trống"
+                            />
 
-                <button
-                    type="submit"
-                    className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-800 transition duration-300"
-                >
-                    Đăng ký
-                </button>
-            </form>
+                            <div className="md:col-span-2">
+                                <InputField
+                                    label="Mật khẩu"
+                                    id="password"
+                                    type="password"
+                                    placeholder="Nhập mật khẩu"
+                                    register={register}
+                                    errors={errors}
+                                    required
+                                    message="Không được để trống"
+                                    min={8}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                                Địa chỉ giao hàng
+                            </p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <InputField
+                                    label="Tỉnh/Thành phố"
+                                    id="province"
+                                    type="text"
+                                    placeholder="Cần Thơ"
+                                    register={register}
+                                    errors={errors}
+                                    required
+                                    message="Không được để trống"
+                                />
+
+                                <InputField
+                                    label="Quận/Huyện"
+                                    id="district"
+                                    type="text"
+                                    placeholder="Ninh Kiều"
+                                    register={register}
+                                    errors={errors}
+                                    required
+                                    message="Không được để trống"
+                                />
+
+                                <InputField
+                                    label="Phường/Xã"
+                                    id="ward"
+                                    type="text"
+                                    placeholder="An Khánh"
+                                    register={register}
+                                    errors={errors}
+                                    required
+                                    message="Không được để trống"
+                                />
+
+                                <InputField
+                                    label="Số điện thoại"
+                                    id="phoneNumber"
+                                    type="text"
+                                    placeholder="0123456789"
+                                    register={register}
+                                    errors={errors}
+                                    required
+                                    message="Không được để trống"
+                                />
+
+                                <div className="md:col-span-2">
+                                    <InputField
+                                        label="Ấp/Số nhà, tên đường"
+                                        id="detail"
+                                        type="text"
+                                        placeholder="Ấp 6/A52, đường số 6"
+                                        register={register}
+                                        errors={errors}
+                                        required
+                                        message="Không được để trống"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <button
+                                type="submit"
+                                className="rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white shadow-sm transition duration-300 hover:bg-emerald-700"
+                            >
+                                Đăng ký
+                            </button>
+
+                            <a
+                                href={googleLoginUrl}
+                                className="flex items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 transition duration-300 hover:bg-gray-50"
+                            >
+                                <span className="text-lg font-semibold text-red-500">G</span>
+                                <span className="font-medium text-gray-700">Đăng nhập với Google</span>
+                            </a>
+                        </div>
+
+                        <p className="text-center text-sm text-slate-600">
+                            Bạn đã có tài khoản?
+                            <Link to="/login" className="ml-1 font-semibold text-cyan-700 transition hover:text-cyan-900 hover:underline">
+                                Đăng nhập
+                            </Link>
+                        </p>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 };

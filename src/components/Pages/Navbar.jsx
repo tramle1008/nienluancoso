@@ -1,4 +1,4 @@
-import { FaShoppingCart, FaStore, FaWater } from "react-icons/fa";
+import { FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation } from 'react-router-dom';
 
 import { Badge } from "@mui/material";
@@ -24,8 +24,8 @@ const Navbar = () => {
         <div className="h-[70px] bg-[#d9a05b] text-white z-50  flex items-center sticky top-0">
             <div className="lg:px-14 sm:px-8 px-4 w-full flex justify-between">
                 <Link to="/" className="flex items-center text-2xl ">
-                    <FaWater className="text-white" />
-                    <span className="font-[Montserrat]"> TideStyle</span>
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 mr-2 object-contain" />
+                    <span className="font-bold">Clothiq</span>
                 </Link>
                 <ul className="flex items-center gap-6">
                     <li>
@@ -43,6 +43,14 @@ const Navbar = () => {
                             to="/products"
                         >
                             Product</Link>
+                    </li>
+                    <li>
+                        <Link className={`${path === "/about" ?
+                            "text-[#8c4a0f] font-bold" : "text-white font-bold"
+                            }`}
+                            to="/about"
+                        >
+                            About</Link>
                     </li>
 
                     <li>

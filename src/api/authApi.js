@@ -1,11 +1,40 @@
-import axios from "axios";
+import api from "./api";
 
-const API_URL = "http://localhost:8080/api/auth/signin";
+export const loginApi = async ({ username, password }) => {
+    const response = await api.post(
+        "/auth/signin",
+        { username, password },
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
 
-export const loginApi = async (username, password) => {
-    const response = await axios.post(API_URL, {
-        username,
-        password
+    return response.data;
+};
+
+export const registerApi = async ({ username, email, password, role = null }) => {
+    const response = await api.post(
+        "/auth/signup",
+        { username, email, password, role },
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    return response.data;
+};
+
+export const addUserAddressApi = async (address, token) => {
+    const response = await api.post("/auth/user/addresses", address, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
     });
+
     return response.data;
 };

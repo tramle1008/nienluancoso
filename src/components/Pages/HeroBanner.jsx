@@ -52,7 +52,7 @@ const HeroBanner = () => {
                                     </p>
                                     <div className="lg:flex justify-start">
                                         <Link
-                                            to="/product"
+                                            to="/products"
                                             className="mt-6 inline-block bg-black text-white py-2 px-4 rounded-md hover:bg-stone-800"
                                         >
                                             Shop

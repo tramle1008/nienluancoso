@@ -23,17 +23,6 @@ const Home = () => {
             </div>
             <section className="bg-[#f2f2f2] pt-5 pb-10 px-4 sm:px-8 lg:px-14">
 
-                <div className="relative bg-cover bg-center h-[400px] rounded-xl overflow-hidden mb-16" >
-                    <div className="absolute inset-0 bg-[#92a695] bg-opacity-50 flex items-center justify-center">
-                        <div className="text-center text-white">
-                            <h1 className="text-5xl font-[Montserrat] mb-4">Chào mừng đến với TileStyle</h1>
-                            <p className="text-lg mb-6">Khám phá xu hướng thời trang mới nhất</p>
-                            <Link to="/products" className="bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200">
-                                Xem sản phẩm
-                            </Link>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Danh mục nổi bật */}
                 <div className="mb-20">
