@@ -1,7 +1,7 @@
 # Clothiq - Fashion E-Commerce Platform
 
 ## Introduction
-Clothiq is a fullstack fashion e-commerce platform, it build in Niên Luân Cơ Sở ngành và được review + update từ 24/5/2026
+Clothiq is a fullstack fashion e-commerce platform, it build in Niên Luân Cơ Sở ngành và được review + update từ 1/6
 
 
 ## Features
