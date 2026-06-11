@@ -3,19 +3,20 @@ import { styled, useTheme } from '@mui/material/styles';
 import {
     Box, Drawer as MuiDrawer, AppBar as MuiAppBar, Toolbar, List, CssBaseline,
     Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText,
-    colors,
-    Button
+    Button,
+    Collapse
 } from '@mui/material';
 
-import { MdOutlineMenu } from "react-icons/md";
+import { MdOutlineMenu, MdExpandLess, MdExpandMore } from "react-icons/md";
 import { FaChevronLeft } from "react-icons/fa";
 import { FaChevronRight } from "react-icons/fa";
-import { MdDashboard } from "react-icons/md";
+import { MdDashboard, MdOutlineDescription, MdInventory } from "react-icons/md";
 import { MdPeopleAlt } from "react-icons/md";
 import { LuShoppingBag } from "react-icons/lu";
 import { FaListAlt } from "react-icons/fa";
 import { IoIosLogOut } from "react-icons/io";
 import { LuClipboardList } from "react-icons/lu";
+import { FiMapPin } from "react-icons/fi";
 
 import { Link } from 'react-router-dom';
 import { green, yellow } from '@mui/material/colors';
@@ -89,7 +90,7 @@ const Drawer = styled(MuiDrawer, {
 export default function AdminSidebar() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
-    const [hoverEnabled, setHoverEnabled] = React.useState(true);
+    const [openProductMenu, setOpenProductMenu] = React.useState(false);
     const [auth, setAuth] = React.useState(null);
     React.useEffect(() => {
         const storedAuth = localStorage.getItem("auth");
@@ -103,16 +104,18 @@ export default function AdminSidebar() {
         }
     }, []);
 
-
-
     const handleDrawerOpen = () => {
         setOpen(true);
-        setHoverEnabled(false);
     };
 
     const handleDrawerClose = () => {
         setOpen(false);
-        setHoverEnabled(true);
+    };
+
+    const handleProductClick = (e) => {
+        e.preventDefault();
+        setOpenProductMenu(!openProductMenu);
+        if (!open) setOpen(true); // Tự động mở sidebar nếu đang thu nhỏ
     };
 
     return (
@@ -169,12 +172,6 @@ export default function AdminSidebar() {
             <Drawer
                 variant="permanent"
                 open={open}
-                onMouseEnter={() => {
-                    if (hoverEnabled) setOpen(true);
-                }}
-                onMouseLeave={() => {
-                    if (hoverEnabled) setOpen(false);
-                }}
                 sx={{
                     '& .MuiDrawer-paper': {
                         backgroundColor: '#1F2937',
@@ -213,11 +210,30 @@ export default function AdminSidebar() {
                         </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding sx={{ display: 'block' }}>
-                        <ListItemButton component={Link} to="/admin/product">
+                        <ListItemButton onClick={handleProductClick}>
                             <ListItemIcon ><LuShoppingBag color="white" /></ListItemIcon>
                             <ListItemText primary="Sản phẩm" />
+                            {openProductMenu ? <MdExpandLess color="white" /> : <MdExpandMore color="white" />}
                         </ListItemButton>
                     </ListItem>
+
+                    <Collapse in={openProductMenu && open} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            <ListItemButton component={Link} to="/admin/products" sx={{ pl: 4 }}>
+                                <ListItemIcon><FaListAlt color="white" /></ListItemIcon>
+                                <ListItemText primary="Danh sách" />
+                            </ListItemButton>
+                            <ListItemButton component={Link} to="/admin/products/proposal" sx={{ pl: 4 }}>
+                                <ListItemIcon><MdOutlineDescription color="white" /></ListItemIcon>
+                                <ListItemText primary="Duyệt nhập" />
+                            </ListItemButton>
+                            <ListItemButton component={Link} to="/admin/products/inventory" sx={{ pl: 4 }}>
+                                <ListItemIcon><MdInventory color="white" /></ListItemIcon>
+                                <ListItemText primary="Kho hàng" />
+                            </ListItemButton>
+                        </List>
+                    </Collapse>
+
                     <ListItem disablePadding sx={{ display: 'block' }}>
                         <ListItemButton component={Link} to="/admin/orders">
                             <ListItemIcon><LuClipboardList color="white" /></ListItemIcon>
@@ -228,6 +244,12 @@ export default function AdminSidebar() {
                         <ListItemButton component={Link} to="/admin/detail">
                             <ListItemIcon><FaListAlt color="white" /></ListItemIcon>
                             <ListItemText primary="Toàn bộ đơn hàng" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding sx={{ display: 'block' }}>
+                        <ListItemButton component={Link} to="/admin/about">
+                            <ListItemIcon><FiMapPin color="white" /></ListItemIcon>
+                            <ListItemText primary="Dia chi co so" />
                         </ListItemButton>
                     </ListItem>
                     <Divider />

@@ -1,92 +1,129 @@
-// Login.jsx
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { toast } from "react-hot-toast";
-
-import InputField from "../../InputField";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import api from "../../../api/api";
+
+import InputField from "../../InputField";
+import { loginApi } from "../../../api/authApi";
+import { persistAuthSession } from "../../../utils/auth";
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const googleLoginUrl = `${import.meta.env.VITE_BACK_END_URL}/oauth2/authorize/google`;
+
     const handleLogin = async (data) => {
         try {
-            const res = await api.post("/auth/signin", {
+            const user = await loginApi({
                 username: data.username,
                 password: data.password,
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
             });
 
-            const user = res.data;
-
-            if (user && user.userName) {
-                toast.success("Đăng nhập thành công!");
-                localStorage.setItem("auth", JSON.stringify(user));
-
-                dispatch({ type: "LOGIN_SUCCESS", payload: user });
-
-                const roles = user.role || [];
-                const isAdmin = roles.includes("ROLE_ADMIN");
-
-                if (isAdmin) {
-                    navigate("/admin");
-                } else {
-                    navigate("/products");
-                }
-
-            } else {
+            if (!user?.userName) {
                 toast.error("Đăng nhập thất bại.");
+                return;
             }
-        } catch (err) {
-            toast.error("Đăng nhập lỗi: " + (err.response?.data?.message || "Lỗi kết nối"));
-        }
 
+            persistAuthSession(user);
+            dispatch({ type: "LOGIN_SUCCESS", payload: user });
+
+            toast.success("Đăng nhập thành công!");
+
+            const roles = user.role || [];
+            navigate(roles.includes("ROLE_ADMIN") ? "/admin" : "/products");
+        } catch (error) {
+            toast.error("Đăng nhập lỗi: " + (error.response?.data?.message || "Lỗi kết nối"));
+        }
     };
 
     return (
-        <div className="max-w-md mx-auto my-20 bg-white shadow-lg p-6 rounded-xl border">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Đăng nhập</h2>
+        <div className="mx-auto my-10 w-full max-w-4xl overflow-hidden rounded-3xl border border-amber-100 bg-[#f2e4d3] shadow-[0_20px_60px_rgba(95,52,8,0.18)]">
+            <div className="grid lg:grid-cols-[0.95fr_1.35fr]">
+                <div className="bg-gradient-to-br from-[#8c4a0f] via-[#c57a2a] to-[#f1c27d] px-8 py-10 text-white">
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-100">Clothiq</p>
+                    <h2 className="mt-4 text-3xl font-bold leading-tight">Chào mừng quay lại</h2>
+                    <p className="mt-4 text-sm leading-6 text-amber-50/90">
+                        Đăng nhập để theo dõi đơn hàng, quản lý hồ sơ và tiếp tục mua sắm nhanh hơn.
+                    </p>
 
-            <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col gap-4">
-                <InputField
-                    label="Tên đăng nhập"
-                    id="username"
-                    type="text"
-                    placeholder="Nhập username"
-                    register={register}
-                    errors={errors}
-                    required={true}
-                    message="Không được để trống"
-                />
+                    <div className="mt-8 space-y-4 rounded-2xl bg-white/15 p-5 backdrop-blur-sm">
+                        <div>
+                            <p className="text-sm font-semibold">Đăng nhập thường</p>
+                            <p className="mt-1 text-sm text-amber-50/85">
+                                Dùng tên đăng nhập và mật khẩu nếu bạn đã có tài khoản Clothiq.
+                            </p>
+                        </div>
+                        <div className="h-px bg-white/20" />
+                        <a
+                            href={googleLoginUrl}
+                            className="block rounded-xl transition hover:bg-white/10"
+                        >
+                            <p className="text-sm font-semibold">Đăng nhập Google</p>
+                            <p className="mt-1 text-sm text-amber-50/85">
+                                Bạn có thể dùng Google để vào nhanh mà không cần nhập lại mật khẩu.
+                            </p>
+                        </a>
+                    </div>
+                </div>
 
-                <InputField
-                    label="Mật khẩu"
-                    id="password"
-                    type="password"
-                    placeholder="Nhập mật khẩu"
-                    register={register}
-                    errors={errors}
-                    required={true}
-                    message="Không được để trống"
-                    min={6}
-                />
+                <div className="bg-[#ead7c0] px-6 py-8 sm:px-8 lg:px-10">
+                    <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
+                        <div>
+                            <h3 className="text-2xl font-bold text-slate-800">Đăng nhập</h3>
+                        </div>
 
-                <button
-                    type="submit"
-                    className="bg-emerald-700 text-white py-2 px-4 rounded-lg hover:bg-emerald-900 transition duration-300"
-                >
-                    Đăng nhập
-                </button>
-                <span>Bạn chưa có tài khoản
-                    <Link to="/register" className="text-cyan-600 hover:underline"> Đăng ký</Link>
-                </span>
-            </form>
+                        <div className="space-y-4">
+                            <InputField
+                                label="Tên đăng nhập"
+                                id="username"
+                                type="text"
+                                placeholder="Nhập username"
+                                register={register}
+                                errors={errors}
+                                required
+                                message="Không được để trống"
+                            />
+
+                            <InputField
+                                label="Mật khẩu"
+                                id="password"
+                                type="password"
+                                placeholder="Nhập mật khẩu"
+                                register={register}
+                                errors={errors}
+                                required
+                                message="Không được để trống"
+                                min={6}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                type="submit"
+                                className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white shadow-sm transition duration-300 hover:bg-emerald-700"
+                            >
+                                Đăng nhập
+                            </button>
+
+                            <a
+                                href={googleLoginUrl}
+                                className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 transition duration-300 hover:bg-gray-50"
+                            >
+                                <span className="text-lg font-semibold text-red-500">G</span>
+                                <span className="font-medium text-gray-700">Đăng nhập với Google</span>
+                            </a>
+                        </div>
+
+                        <p className="text-center text-sm text-slate-600">
+                            Bạn chưa có tài khoản?
+                            <Link to="/register" className="ml-1 font-semibold text-cyan-700 transition hover:text-cyan-900 hover:underline">
+                                Đăng ký
+                            </Link>
+                        </p>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 };

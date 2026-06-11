@@ -55,8 +55,12 @@ const AddAdress = () => {
             dispatch(fetchAddresses());
             navigate(-1);
         } catch (error) {
-            toast.error("Thêm địa chỉ thất bại");
-            console.error("Lỗi thêm địa chỉ:", error);
+            const message =
+                typeof error.response?.data === "string"
+                    ? error.response.data
+                    : error.response?.data?.message || "Thêm địa chỉ thất bại";
+
+            toast.error(message);
         }
     };
 
